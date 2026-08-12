@@ -24,11 +24,11 @@ async def health_check():
             "uptime": format_uptime(process.create_time()),
             "cpu": f"{process.cpu_percent():.2f}% ({cpu_count} cores)",
             "memory": f"{mem.rss / 1024 / 1024:.2f} MB / {total_mem / 1024 / 1024 / 1024:.2f} GB",
-            "url": f"http://localhost:{settings.PORT}",
+            "url": settings.APP_URL or f"http://localhost:{settings.PORT}",
         },
         "ai": {
             "mode": settings.AI_USED,
-            "model": settings.CROP_AI_MODEL if settings.AI_USED == "local" else "models/gemini-3.5-flash" if settings.AI_USED == "gemini" else "HDM AI",
+            "model": "models/gemini-3.5-flash" if settings.AI_USED == "gemini" else settings.CROP_AI_MODEL if settings.AI_USED == "local" else "HDM AI",
             "confidence_threshold": settings.CONFIDENCE_THRESHOLD,
             "model_exists": os.path.exists(settings.CROP_AI_MODEL),
         },
