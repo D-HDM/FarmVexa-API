@@ -1,0 +1,1 @@
+{"thresholds":{"soil_moisture_low":20,"soil_moisture_high":80,"temperature_high":35,"temperature_low":5,"humidity_high":85,"disease_risk_humidity":75,"disease_risk_temperature":28},"trend_rules":{"declining_days":3,"rising_days":3}} 
