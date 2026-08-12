@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config.settings import settings
 from routes import sensor_routes, crop_routes, health_routes, model_routes, chat_routes
+from keep_alive import keep_alive
 from utils.logger import logger
 
 settings.validate()
@@ -21,6 +22,8 @@ async def lifespan(app: FastAPI):
             logger.info(f"✅ Model found: {settings.CROP_AI_MODEL}")
         else:
             logger.warning(f"⚠️  Model not found: {settings.CROP_AI_MODEL}")
+
+    keep_alive.start()
 
     yield
 
