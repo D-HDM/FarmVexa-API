@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config.settings import settings
-from routes import sensor_routes, crop_routes, health_routes, model_routes, chat_routes
+from routes import sensor_routes, crop_routes, health_routes, model_routes, chat_routes, field_scan_routes
 from keep_alive import keep_alive
 from utils.logger import logger
 
@@ -50,6 +50,7 @@ app.include_router(sensor_routes.router, prefix="/api", tags=["Sensor Analysis"]
 app.include_router(crop_routes.router, prefix="/api", tags=["Crop Analysis"])
 app.include_router(model_routes.router, prefix="/api", tags=["Models"])
 app.include_router(chat_routes.router, prefix="/api", tags=["Farmer Chat"])
+app.include_router(field_scan_routes.router, prefix="/api", tags=["Field Scan"])
 
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 os.makedirs(settings.TEMP_DIR, exist_ok=True)
@@ -66,6 +67,7 @@ async def root():
             "health": "/api/health",
             "analyze_sensors": "/api/analyze/sensors",
             "analyze_crop": "/api/analyze/crop",
+            "analyze_field_scan": "/api/analyze/field-scan",
             "model_details": "/api/models/details",
             "train_model": "/api/models/train",
             "farmer_chat": "/api/chat"

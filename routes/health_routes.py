@@ -53,7 +53,23 @@ def format_uptime(create_time):
 def check_mern_connection():
     import httpx
     try:
-        response = httpx.get(f"{settings.MERN_URL}/api/health", timeout=5)
-        return response.status_code == 200
-    except:
+        # Try with longer timeout and follow redirects
+        response = httpx.get(
+            f"{settings.MERN_URL}/api/health",
+            timeout=15,
+            follow_redirects=True,
+            headers={"User-Agent": "FarmVexa-AI-HealthCheck/1.0"},
+        )
+        if response.status_code == 200:
+            return True
+        logger.warning(f"MERN health check returned status: {response.status_code}")
+        return False
+    except httpx.TimeoutException:
+        logger.warning(f"MERN health check timed out: {settings.MERN_URL}/api/health")
+        return False
+    except httpx.ConnectError as e:
+        logger.warning(f"MERN health check connection failed: {e}")
+        return False
+    except Exception as e:
+        logger.warning(f"MERN health check failed: {e}")
         return False

@@ -21,7 +21,14 @@ class Settings:
     AI_USED: str = os.getenv("AI_USED", "local")
     HDM_AI_API_KEY: str = os.getenv("HDM_AI_API_KEY", "")
     HDM_AI_URL: str = os.getenv("HDM_AI_URL", "")
+    
+    # Gemini Keys — Crop & Chat
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY_BACKUP: str = os.getenv("GEMINI_API_KEY_BACKUP", "")
+    
+    # Gemini Keys — Field Scan
+    GEMINI_FIELDSCAN_API_KEY: str = os.getenv("GEMINI_FIELDSCAN_API_KEY", "")
+    GEMINI_FIELDSCAN_API_KEY_BACKUP: str = os.getenv("GEMINI_FIELDSCAN_API_KEY_BACKUP", "")
 
     # Model Paths
     CROP_AI_MODEL: str = os.getenv("CROP_AI_MODEL", "models/crop_ai_model_v1.h5")
