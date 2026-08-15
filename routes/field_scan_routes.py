@@ -37,10 +37,10 @@ class FieldScanService:
             if img is None:
                 return True, 0, "invalid"
 
-            # 1. Blur detection
+            # 1. Blur detection — LOWER THRESHOLD (20 instead of 50)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             blur_score = cv2.Laplacian(gray, cv2.CV_64F).var()
-            if blur_score < 50:
+            if blur_score < 20:
                 return True, 0, "blurry"
 
             # 2. Green coverage (healthy vegetation)
@@ -55,17 +55,15 @@ class FieldScanService:
             disease_percentage = (np.sum(disease_mask > 0) / disease_mask.size) * 100
 
             # Score: higher = more suspicious
-            # Disease spots increase score, high green coverage decreases
             score = disease_percentage * 10 - (green_percentage - 50) * 0.5
             score = max(0, score)
 
-            # Skip if very healthy (high green, low disease)
-            if disease_percentage < 2 and green_percentage > 70:
+            # Skip only if VERY healthy (disease < 1% AND green > 80%)
+            if disease_percentage < 1 and green_percentage > 80:
                 return True, score, "healthy"
 
-            # Skip if no vegetation at all
-            if green_percentage < 10:
-                return True, score, "no_vegetation"
+            # Let Gemini decide for low vegetation frames
+            # (removed no_vegetation skip)
 
             return False, score, None
 
@@ -107,18 +105,18 @@ Return ONLY a JSON array (no markdown) with {len(frames_data)} objects:
 
         return json.loads(response_text)
 
-    def analyze_batch(self, frames, crop_type):
+    def analyze_batch(self, frames_data, crop_type):
         """Analyze batch with primary key, fallback to backup. Returns (results, key_used)."""
         try:
-            logger.info(f"[Gemini Batch] Using primary FieldScan key — {len(frames)} frames")
-            results = self._analyze_batch_with_key(self.primary_key, frames, crop_type)
+            logger.info(f"[Gemini Batch] Using primary FieldScan key — {len(frames_data)} frames")
+            results = self._analyze_batch_with_key(self.primary_key, frames_data, crop_type)
             return results, "fieldscan_primary"
         except Exception as e:
             if is_key_limit_error(e) and has_backup("fieldscan"):
                 logger.warning(f"Primary FieldScan key failed: {e}. Trying backup...")
                 try:
-                    logger.info(f"[Gemini Batch] Using backup FieldScan key — {len(frames)} frames")
-                    results = self._analyze_batch_with_key(self.backup_key, frames, crop_type)
+                    logger.info(f"[Gemini Batch] Using backup FieldScan key — {len(frames_data)} frames")
+                    results = self._analyze_batch_with_key(self.backup_key, frames_data, crop_type)
                     return results, "fieldscan_backup"
                 except Exception as e2:
                     logger.error(f"Backup FieldScan key also failed: {e2}")
@@ -265,7 +263,6 @@ async def analyze_field_scan(data: dict, x_api_key: str = Header(None)):
 
             except Exception as e:
                 logger.error(f"[Gemini Batch] Request {batch_idx + 1}/{total_batches} — FAILED: {e}")
-                # Continue with other batches
                 continue
 
         # === STEP 4: Build summary ===
